@@ -10,8 +10,8 @@ import numpy as np
 # Set the page to wide mode
 # st.set_page_config(layout="wide")
 
-# test
-st.write('hiiii')
+# Title
+st.title('Obese K-Means Clustering Application')
 
 # Upload file
 file_format = st.radio('Select file format:', ('csv', 'excel'), key='file_format')
