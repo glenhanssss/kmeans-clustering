@@ -20,7 +20,7 @@ dataset = st.file_uploader(label = '')
 use_defo = st.checkbox('Use example Dataset')
 if use_defo:
     # dataset = r"C:\Users\075422749\Downloads\aichemist\dataset\obesity_used.csv"
-    dataset = r'day.csv'
+    dataset = r'obesity_data.csv'
     # st.write("[Dataset Explanation Link](___________________________)")
 
 if dataset:
