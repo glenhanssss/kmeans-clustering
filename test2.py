@@ -243,11 +243,11 @@ if dataset:
                 st.pyplot(plt)
                 st.markdown("<br><br>", unsafe_allow_html=True)
 
-            # Future Feature Text
-            st.markdown("""<hr style="height:4px;border:none;color:#333;background-color:#333;" />""", unsafe_allow_html=True)
-            st.title("Future Feature with Generative AI")
-            st.markdown("<strong>Form Input based on Clustering Result</strong>", unsafe_allow_html=True)
-            st. image(r"images/4. AIchemist generate.png")
-            st.markdown("<br>", unsafe_allow_html=True)
-            st.markdown("<strong>Recommendation and Material Result based on Form</strong>", unsafe_allow_html=True)
-            st.image(r"images/5. AIchemist generate -result.png")
+            # # Future Feature Text
+            # st.markdown("""<hr style="height:4px;border:none;color:#333;background-color:#333;" />""", unsafe_allow_html=True)
+            # st.title("Future Feature with Generative AI")
+            # st.markdown("<strong>Form Input based on Clustering Result</strong>", unsafe_allow_html=True)
+            # st. image(r"images/4. AIchemist generate.png")
+            # st.markdown("<br>", unsafe_allow_html=True)
+            # st.markdown("<strong>Recommendation and Material Result based on Form</strong>", unsafe_allow_html=True)
+            # st.image(r"images/5. AIchemist generate -result.png")
