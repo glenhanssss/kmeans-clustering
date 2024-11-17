@@ -17,7 +17,7 @@ with st.container():
     
     # Add the logo in the first column
     with col1:
-        st.image(r"/images/aichemy.png", width=100)  # Replace with the path to your logo
+        st.image(r"images/aichemy.png", width=100)  # Replace with the path to your logo
 
     # Add navigation links or a title in the second column
     with col2:
