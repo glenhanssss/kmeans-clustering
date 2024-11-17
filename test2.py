@@ -10,8 +10,45 @@ import numpy as np
 # Set the page to wide mode
 # st.set_page_config(layout="wide")
 
-# Title
-st.title('Obese K-Means Clustering Application')
+# Create a top container for the navbar
+with st.container():
+    # Split the space into columns
+    col1, col2 = st.columns([1, 5])  # Adjust proportions as needed
+    
+    # Add the logo in the first column
+    with col1:
+        st.image(r"/images/aichemy.png", width=100)  # Replace with the path to your logo
+
+    # Add navigation links or a title in the second column
+    with col2:
+        st.markdown("""
+        <style>
+        .navbar-links {
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
+            gap: 20px;
+            font-size: 25px;
+            font-weight: bold;
+        }
+        .navbar-links a {
+            text-decoration: none;
+            color: #004080;
+        }
+        .navbar-links a:hover {
+            text-decoration: underline;
+        }
+        </style>
+        <div class="navbar-links">
+            <a href="#home">Home</a>
+            <a href="#about">About</a>
+            <a href="#contact">Contact</a>
+        </div>
+        """, unsafe_allow_html=True)
+
+# Main content
+st.title("Obese K-Means Clustering Application")
+st.markdown("<strong>AIchemist: Leveraging AI to Bridge Demographic and Characteristic Gaps in Health Education</strong>", unsafe_allow_html=True)
 
 # Upload file
 file_format = st.radio('Select file format:', ('csv', 'excel'), key='file_format')
