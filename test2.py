@@ -28,7 +28,7 @@ if dataset:
     else:
         df = pd.read_excel(dataset)
 
-    # Display the DataFrame
+    # Show the DataFrame
     st.write("Dataset:")
     st.dataframe(df)
 
@@ -46,24 +46,14 @@ if dataset:
     for current_string_columns in string_columns:
         df2[current_string_columns] = le.fit_transform(df2[current_string_columns])
     
-    # st.dataframe(df2)    
-
     # Select the target variable (y) and the independent variables (X)
     independent_variables = st.multiselect("Select Independent Variables (X)", df2.columns.tolist())
-
     if st.button("Perform K-Means Clustering"):
         st.markdown("<br>", unsafe_allow_html=True)
-
-        # 
-        # X = df2[independent_variables]
-
-
-        # Find the optimal number of cluster
-
+        ############# Find the optimal number of cluster #############
         # Select the features that the user wants
         selected_features = independent_variables
         df3 = df2[selected_features]
-        st.write(selected_features)
 
         # Sihouette Method
         # Measure how similar a point is to its own cluster compared to other clusters
@@ -74,6 +64,7 @@ if dataset:
             labels = kmeans.labels_
             sil.append(silhouette_score(df3, labels, metric = 'euclidean'))
 
+        st.markdown("<h3>Optimal Number of Cluster</h3>", unsafe_allow_html=True)
         plt.figure(figsize=(10,5))
         plt.plot(range(2,kmax+1),sil,marker='+')
         plt.xlabel('Number of clusters')
@@ -86,64 +77,117 @@ if dataset:
         st.write("Number of clusters with highest distortion:", n_cluster)
         st.markdown("<br><br>", unsafe_allow_html=True)
 
-################
+        ############# K-MEANS CLUSTERING #############
         # Performs K-means clustering based on the total number of clusters obtained previously
         kmeans=KMeans(n_clusters=n_cluster,random_state=101)
         kmeans.fit(df3)
-################
+
         # Add cluster number result to each of the data row to the dataframe
         labels=pd.Series(kmeans.labels_,name='cluster_number')
         df_with_cluster=pd.concat([df,labels],axis=1)
 
+        ############# ADD BINNED FEATURES TO THE DATAFRAME #############
+        # PREDEFINED BINNING VALUE  
+        pre_defined_binning_features = ['Age', 'Height', 'Weight', 'BMI']
         # Age binning
-        age_bins = [0,4,9,18,59,100]
-        age_bin_labels = ['<5', '5-9', '10-18', '18-59', '60+']
-        df_with_cluster['age_bins']=pd.cut(df_with_cluster['Age'],bins=age_bins, labels=age_bin_labels)
+        if 'Age' in df_with_cluster.columns:
+            age_bins = [0,4,9,18,59,100]
+            age_bin_labels = ['<5', '5-9', '10-18', '18-59', '60+']
+            df_with_cluster['age_bins']=pd.cut(df_with_cluster['Age'],bins=age_bins, labels=age_bin_labels)
 
-        # # Height binning
-        height_bins = [0, 150, 160, 170, 180, 190, 300]  # Bins must cover the entire range
-        height_bin_labels = ['<150', '150-160', '160-170', '170-180', '180-190', '190+']
-        df_with_cluster['height_bins']=pd.cut(df_with_cluster['Height'],bins=height_bins, labels=height_bin_labels)
+        # Height binning
+        if 'Height' in df_with_cluster.columns:
+            height_bins = [0, 150, 160, 170, 180, 190, 300]  # Bins must cover the entire range
+            height_bin_labels = ['<150', '150-160', '160-170', '170-180', '180-190', '190+']
+            df_with_cluster['height_bins']=pd.cut(df_with_cluster['Height'],bins=height_bins, labels=height_bin_labels)
 
         # Weight binning
-        weight_bins = [0, 10, 19, 29, 49, 69, 89, 109, 250]
-        weight_bins_labels = ['<10', '10-19', '20-29', '30-49', '50-69', '70-89', '90-109', '110+']
-        df_with_cluster['weight_bins']=pd.cut(df_with_cluster['Weight'],bins=weight_bins, labels=weight_bins_labels)
+        if 'Weight' in df_with_cluster.columns:
+            weight_bins = [0, 10, 19, 29, 49, 69, 89, 109, 250]
+            weight_bins_labels = ['<10', '10-19', '20-29', '30-49', '50-69', '70-89', '90-109', '110+']
+            df_with_cluster['weight_bins']=pd.cut(df_with_cluster['Weight'],bins=weight_bins, labels=weight_bins_labels)
 
         # BMI binning
-        bmi_bins = [0, 18.5, 24.9, 29.9, 34.9, 39.9, 100]
-        bmi_bin_labels = ['<18.5', '18.5-24.9', '25-29.9', '30-34.9', '35-39.9', '40+']
-        df_with_cluster['bmi_bins'] = pd.cut(df_with_cluster['BMI'], bins=bmi_bins, labels=bmi_bin_labels)
-################
+        if 'BMI' in df_with_cluster.columns:
+            bmi_bins = [0, 18.5, 24.9, 29.9, 34.9, 39.9, 100]
+            bmi_bin_labels = ['<18.5', '18.5-24.9', '25-29.9', '30-34.9', '35-39.9', '40+']
+            df_with_cluster['bmi_bins'] = pd.cut(df_with_cluster['BMI'], bins=bmi_bins, labels=bmi_bin_labels)
+
+        # Auto binning 
+        # Automtically binn features (integer and float) that aren't on PREDEFINED BINNING FEATURES list
+
+        # int_columns = df.columns[df.dtypes == 'int64'] 
+        int_columns = df.columns[(df.dtypes == 'int64') & (df.nunique() > 10)]
+        int_columns = [x for x in int_columns if x not in pre_defined_binning_features]
+
+        # float_columns = df.columns[df.dtypes == 'float64']
+        float_columns = df.columns[(df.dtypes == 'float64') & (df.nunique() > 10)]
+        float_columns = [x for x in float_columns if x not in pre_defined_binning_features]
+
+        # Combine the result for int and float features
+        combined_auto_binned_columns = int_columns + float_columns
+        
+        # Version 1
+        # final_combined_auto_binned_columns = combined_auto_binned_columns
+        # for current_column in combined_auto_binned_columns:
+        #     if df_with_cluster[current_column].nunique() > 10: # Check if the current column/feature has more than 10 Unique values/data. IF True THEN bin based on percentiles
+        #         # Create bins based on specific percentiles
+        #         # Defined percentiles (0%, 25%, 50%, 75%, 100%)
+        #         percentiles = [0, 25, 50, 75, 100]  
+        #         bin_edges = np.percentile(df_with_cluster[current_column], percentiles)
+
+        #         # Create labels for bins
+        #         labels = [f"{int(bin_edges[i])}-{int(bin_edges[i+1])}" for i in range(len(bin_edges)-1)]
+
+        #         # Bin the row averages
+        #         df_with_cluster[current_column+'_bins'] = pd.cut(df_with_cluster[current_column], bins=bin_edges, labels=labels, include_lowest=True)
+        #     else: # IF has <= 10 --> THEN no need to bin the feature/column
+        #         final_combined_auto_binned_columns.remove(current_column)
+        
+        # Version 2
+        for current_column in combined_auto_binned_columns:
+            # Create bins based on specific percentiles
+            # Defined percentiles (0%, 25%, 50%, 75%, 100%)
+            percentiles = [0, 25, 50, 75, 100]  
+            bin_edges = np.percentile(df_with_cluster[current_column], percentiles)
+
+            # Create labels for bins
+            labels = [f"{int(bin_edges[i])}-{int(bin_edges[i+1])}" for i in range(len(bin_edges)-1)]
+
+            # Bin the row averages
+            df_with_cluster[current_column+'_bins'] = pd.cut(df_with_cluster[current_column], bins=bin_edges, labels=labels, include_lowest=True)
+
+
+        ############# GENERATE THE RESULTS, CHARTS, ETC #############
+
         # People count for every cluster
         # Plot with bar chart
         peopleCount = df_with_cluster['cluster_number'].value_counts().plot(kind='bar',cmap='Set2')
-
         # Add labels on top of each bar
         for bar in peopleCount.patches:  # Iterate over each bar in the plot
             peopleCount.text(
-                bar.get_x() + bar.get_width() / 2, # X-coordinate (center of bar)
-                bar.get_height(),                  # Y-coordinate (height of bar)
-                int(bar.get_height()),             # Text (bar height as integer)
-                ha='center',                       # Horizontal alignment
-                va='bottom'                        # Vertical alignment
+                bar.get_x() + bar.get_width() / 2, 
+                bar.get_height(),                  
+                int(bar.get_height()),             
+                ha='center',                       
+                va='bottom'                       
             )
-
-        st.write('People count for every cluster')
+        st.markdown("<h3>Population Distribution Across Clusters</h3>", unsafe_allow_html=True)
         plt.xlabel('Cluster')
         plt.ylabel('Number of People')
         plt.show()
         st.pyplot(plt)
         st.markdown("<br><br>", unsafe_allow_html=True)
-################
-################
+
+        # Generate charts, results for SELECTED FEATURES ONLY
         for current_selected_feature in selected_features:
-            if current_selected_feature == "Age" or current_selected_feature == "Weight" or current_selected_feature == "Height" or current_selected_feature == "BMI":
+            # Check if the selected feature is in the list of binned features
+            if (current_selected_feature in pre_defined_binning_features) or (current_selected_feature in combined_auto_binned_columns):
                 df_cluster_age=df_with_cluster.groupby(['cluster_number',current_selected_feature.lower()+'_bins']).size().unstack().fillna(0)
                 plt.figure(figsize=(5, 4))
                 sns.heatmap(df_cluster_age.apply(lambda x:x/x.sum(),axis=1),annot=True,cmap='BuPu')
 
-                st.write(current_selected_feature + ' group distribution')
+                st.markdown("<h3>" + current_selected_feature + ' group distribution' + "</h3>", unsafe_allow_html=True)
                 plt.gcf().set_size_inches(13,4)
                 plt.xlabel(current_selected_feature+ ' Group')
                 plt.ylabel('Cluster')
@@ -155,7 +199,7 @@ if dataset:
                 plt.figure(figsize=(5, 4))
                 sns.heatmap(df_cluster_gender.apply(lambda x:x/x.sum(),axis=1),annot=True,cmap='BuPu')
 
-                st.write(current_selected_feature + ' Distribution')
+                st.markdown("<h3>" + current_selected_feature + ' Distribution' + "</h3>", unsafe_allow_html=True)
                 plt.xlabel(current_selected_feature)
                 plt.ylabel('Cluster')
                 plt.show()
